@@ -1,4 +1,14 @@
 Liked tweets JSON
+get_me => 
+```
+{
+  "data": {
+    "id": "934627337701920768",
+    "name": "Robert Daniel Pickard",
+    "username": "notpickard"
+  }
+}
+```
 
 get_user_liked_tweets =>
 ```
