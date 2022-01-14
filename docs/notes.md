@@ -11,7 +11,7 @@ The request might require a scope that was not included in the original authoriz
 'OAuth 2.0 scopes required by this endpoint' section of API reference documentation on Twitter site. Make sure the
 `scope` parameter of the call to `pytwitter.Api` includes the required scope in the list.
 
-![](/Users/pickard/projects/twitter_bleach/docs/media/OAuth2_scopes_example_screenshot.png "Example of scopes of DELETE /2/users/:id/likes/:tweet_id endpoint")
+![](media/OAuth2_scopes_example_screenshot.png "Example of scopes of DELETE /2/users/:id/likes/:tweet_id endpoint")
 
 ```
 # Example of making sure the API authentication includes needed scope
@@ -37,7 +37,7 @@ api.unlike_tweet(my_twitter_id, tweet_id=tweet_id_to_delete)
 
 Some calls have rate limiting on them. 
 
-![](/Users/pickard/projects/twitter_bleach/docs/media/endpoint_rate_limit_example_screenshot.png "Rate limits of the DELETE /2/users/:id/likes/:tweet_id endpoint in Twitter docuemation")
+![](media/endpoint_rate_limit_example_screenshot.png "Rate limits of the DELETE /2/users/:id/likes/:tweet_id endpoint in Twitter docuemation")
 
 End point rate limit windows are per end point, not cumulative for all end points. For example the rate limit of requests
 to end point `DELETE /2/users/:id/likes/:tweet_id` are counted in their own 15 min window from `GET /2/users/:id/followers` window. This
@@ -89,4 +89,4 @@ There is a ["Tweet cap volume" rate](https://developer.twitter.com/en/docs/twitt
 am not sure how this rate manifests in the API. The "Cap Usage" for the app can be seen in the [developer portal page](https://developer.twitter.com/en/portal/dashboard). Its not
 clear if the cap is accessible through the API
 
-![](/Users/pickard/projects/twitter_bleach/docs/media/monthy_cap_screenshot.png)
+![](media/monthy_cap_screenshot.png)
