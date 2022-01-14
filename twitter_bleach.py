@@ -2,6 +2,8 @@ import os
 import http.server
 import logging
 import sys
+import time
+import json
 
 import pytwitter
 
@@ -13,9 +15,9 @@ auth_url = ""
 
 logging.basicConfig(level=logging.DEBUG)
 
-BLEACH_FOLLOWS = True
+BLEACH_FOLLOWS = False
 BLEACH_LIKES = True
-BLEACH_TWEETS = True
+BLEACH_TWEETS = False
 
 # The scopes requested of the Twitter OAUTH2 API on behalf of the user that will bleach their account
 twitter_api_scopes = ["tweet.read", "tweet.write", "users.read", "tweet.read",
@@ -58,8 +60,7 @@ twitter_auth_callback_redirect_url = f"http://127.0.0.1:{httpd_bound_port}/"
 
 # Start the OAUTH2 process with Twitter to get a temporary bearer token that authorizes making changes to the
 # account.
-api = pytwitter.Api(client_id=TWITTER_CLIENT_ID, oauth_flow=True,
-                    scopes=['block.read', "users.read", "tweet.read", "follows.read", "follows.write"])
+api = pytwitter.Api(client_id=TWITTER_CLIENT_ID, oauth_flow=True, scopes=twitter_api_scopes)
 twitter_user_auth_url, code_verifier, _ = api.get_oauth2_authorize_url(redirect_uri=twitter_auth_callback_redirect_url)
 print("CLICK ME \u2193\u2193\u2193\u2193")
 print(twitter_user_auth_url)
@@ -81,6 +82,7 @@ api2 = pytwitter.Api(bearer_token=auth_details['access_token'])
 # Get details about the account. Specifically the Twitter ID for the user that authorized the app.
 twitter_me = api2.get_me(return_json=True)
 logging.debug(twitter_me)
+my_twitter_id = twitter_me["data"]["id"]
 
 # Loop through all of the followers and unfollow them
 cursor_token = None
@@ -99,13 +101,50 @@ while BLEACH_FOLLOWS:
 logging.debug(f"Total follows count {total_following}")
 
 # Loop through all of the likes and unlike them
-total_likes = 0
-while BLEACH_LIKES:
-    break
-    # NOTE There is a rate limit of 75 requests for likes per 15-min window https://developer.twitter.com/en/docs/twitter-api/tweets/likes/api-reference/get-users-id-liked_tweets
-    # NOTE There is a rate limit of 50 'unlikes' per 15-min window https://developer.twitter.com/en/docs/twitter-api/tweets/likes/api-reference/delete-users-id-likes-tweet_id
-logging.debug(f"Total likes {total_likes}")
+total_unliked_tweets = 0
+pagination_token = None
 
+previous_likes_file_handle = open("local/previous_likes.txt", 'a+')
+
+while BLEACH_LIKES:
+    try:
+        liked_tweets_query_result = api2.get_user_liked_tweets(user_id=twitter_me["data"]["id"],
+                                                               return_json=True,
+                                                               max_results=50,
+                                                               pagination_token=pagination_token)
+        for tweet in liked_tweets_query_result['data']:
+            try:
+                previous_likes_file_handle.write(json.dumps(tweet))
+                previous_likes_file_handle.write("\n")
+
+                api2.unlike_tweet(my_twitter_id, tweet_id=tweet["id"])
+                total_unliked_tweets += 1
+            except pytwitter.error.PyTwitterError as ptw:
+                if type(ptw.message) is dict and ptw.message.get('status', -1) == 429:
+                    # NOTE There is a rate limit of 50 'unlikes' per 15-min window
+                    # https://developer.twitter.com/en/docs/twitter-api/tweets/likes/api-reference/delete-users-id-likes-tweet_id
+                    logging.info("Unlike Tweet rate limit exceeded. Waiting 15min. Unliked so far {}".format(total_unliked_tweets))
+                    time.sleep(900)
+                elif type(ptw.message) is dict and 'status' in ptw.message.keys():
+                    logging.fatal("PyTwitterError with unknown status {} '{}'".format(ptw.message['status'], ptw.message))
+                    break
+                else:
+                    logging.fatal("PyTwitterError with unknown message format '{}'".format(ptw.message['status'], ptw.message))
+                    break
+    except pytwitter.error.PyTwitterError as ptw:
+        if type(ptw.message) is dict and ptw.message.get('status', -1) == 429:
+            # NOTE There is a rate limit of 75 requests for likes per 15-min window https://developer.twitter.com/en/docs/twitter-api/tweets/likes/api-reference/get-users-id-liked_tweets
+            logging.info("Get Tweets rate limit exceeded. Waiting 15min")
+            time.sleep(900)
+        elif type(ptw.message) is dict and 'status' in ptw.message.keys():
+            logging.fatal("PyTwitterError with unknown status {} '{}'".format(ptw.message['status'], ptw.message))
+            sys.exit(-1)
+        else:
+            logging.fatal("PyTwitterError with unknown message format '{}'".format(ptw.message['status'], ptw.message))
+            sys.exit(-1)
+
+logging.debug(f"Total likes {total_unliked_tweets}")
+previous_likes_file_handle.close()
 
 # Loop through all of the user tweets and delete them
 total_tweets = 0
