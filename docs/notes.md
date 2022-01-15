@@ -77,6 +77,25 @@ while True:
         break
 
 ```
+### "Something went wrong" message in Authorize App OAuth2 flow
+
+![](media/something_went_wrong_auth_message.png)
+
+This happens when the redirect URL passed in to the `get_oauth2_authorize_url` pytwitter function is not included in the Twitter application Callback URL list
+
+If the code is 
+```
+twitter_auth_callback_redirect_url="http://localhost:8888"
+twitter_user_auth_url, code_verifier, _ = api.get_oauth2_authorize_url(redirect_uri=twitter_auth_callback_redirect_url)
+```
+
+And the Twitter Application Callback URLs list is configured as
+
+![](media/set-up_step-2-e.jpg)
+
+The user will get "Something went wrong" message. 
+
+The reason is the redirect URL in the code `http://localhost:8888` is not in the list of Callback URLs. The Callback URL list host is all `127.0.0.1`. The URLs have to be exactly the same.
 
 ## Rate limits
 
@@ -90,3 +109,7 @@ am not sure how this rate manifests in the API. The "Cap Usage" for the app can 
 clear if the cap is accessible through the API
 
 ![](media/monthy_cap_screenshot.png)
+
+## Miscellaneous
+
+API bearer tokens don't seem to expire.

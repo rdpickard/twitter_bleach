@@ -14,7 +14,7 @@ doesn't have to be run continually, all in one go, to be effective. It can run f
 going without progress being lost. 
 
 ### Twitter application Set-up 
-> If you don't have a Twitter developer account and don't know how to set upa Twitter API Application, there is a step-by-step guide [here](docs/twitter_application_setup.md).
+> If you don't have a Twitter developer account and don't know how to set up a Twitter API Application, there is a step-by-step guide [here](docs/twitter_application_setup.md).
 
 Create a Twitter application on your developer account. The account settings are
 
