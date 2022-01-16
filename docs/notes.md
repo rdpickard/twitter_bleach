@@ -5,6 +5,8 @@
 
 [Twitter APIv2 ref](https://developer.twitter.com/en/docs/api-reference-index)
 
+[pytwitter git homepage](https://github.com/sns-sdks/python-twitter/tree/master/pytwitter)
+
 ## Trouble shooting
 ### API request returns 403
 The request might require a scope that was not included in the original authorization. Check the
@@ -32,6 +34,9 @@ my_twitter_id = "XXXXXX"
 tweet_id_to_delete = "YYYYYY"
 api.unlike_tweet(my_twitter_id, tweet_id=tweet_id_to_delete)
 ```
+### API request returns 403 after running for a while
+
+Maybe bearer token expired?
 
 ### API request returns 'Too Many Requests' with HTTP status code 429
 
@@ -110,6 +115,10 @@ clear if the cap is accessible through the API
 
 ![](media/monthy_cap_screenshot.png)
 
+### API request returns 503
+
+Not sure why this happens. Only seen it once.
+
 ## Miscellaneous
 
-API bearer tokens don't seem to expire.
+~~API bearer tokens don't seem to expire.~~ This seems wrong. After an hour of running code gets 403
