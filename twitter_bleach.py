@@ -20,8 +20,10 @@ if sys.version_info < (3, 7):
 LOCAL_HTTPD_SERVER_PORTS_TO_TRY = [8888, 8880, 8080, 9977, 4356, 3307]
 
 TWITTER_CLIENT_ID = os.environ.get("TWITTER_CLIENT_ID")
-
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.DEBUG,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 BLEACH_FOLLOWS = False
 BLEACH_LIKES = True
@@ -219,7 +221,7 @@ print(auth_details)
 
 # Get details about the account. Specifically the Twitter ID for the user that authorized the app.
 twitter_me = api.get_me(return_json=True)
-logging.debug(twitter_me)
+#logging.debug(twitter_me)
 my_twitter_id = twitter_me["data"]["id"]
 
 # Loop through all of the followers and unfollow them
@@ -253,9 +255,8 @@ while BLEACH_LIKES:
                                                               max_results=50,
                                                               pagination_token=pagination_token)
         tweet_ids_to_do = tweet_ids_not_done + list(map(lambda t: t["id"], liked_tweets_query_result['data']))
-
+        logging.info(tweet_ids_to_do)
         tweet_ids_not_done = []
-
         for tweet_id in tweet_ids_to_do:
             try:
                 api.unlike_tweet(my_twitter_id, tweet_id=tweet_id)
@@ -274,7 +275,9 @@ while BLEACH_LIKES:
 
     except WrappedPyTwitterAPIUnauthorizedException:
         logging.info("Authentication failed. Access token may have expired")
-        auth_details = api.refresh_access_token(auth_details["refresh_token"])
+        auth_details = api.refresh_access_token(auth_details[""
+                                                             ""
+                                                             ""])
         continue
     except pytwitter.error.PyTwitterError as ptw:
         logging.fatal("PyTwitterError with unknown message format '{}'".format(ptw.message['status'], ptw.message))
