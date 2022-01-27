@@ -6,6 +6,7 @@ import time
 import json
 import webbrowser
 import functools
+import base64
 
 import authlib.integrations.requests_client
 # noinspection PyPackageRequirements
@@ -21,6 +22,7 @@ LOCAL_HTTPD_SERVER_PORTS_TO_TRY = [8888, 8880, 8080, 9977, 4356, 3307]
 
 TWITTER_CLIENT_ID = os.environ.get("TWITTER_CLIENT_ID")
 logging.basicConfig(
+    filename="local/disklikes-2.log",
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
@@ -254,6 +256,11 @@ while BLEACH_LIKES:
                                                               return_json=True,
                                                               max_results=50,
                                                               pagination_token=pagination_token)
+
+        if 'data' not in liked_tweets_query_result.keys():
+            logging.warning("Twitter response to liked data has no key 'data'. Skipping. Response JSON '{}'".format(base64.b64encode(json.dumps(liked_tweets_query_result).encode())))
+            continue
+
         tweet_ids_to_do = tweet_ids_not_done + list(map(lambda t: t["id"], liked_tweets_query_result['data']))
         logging.info(tweet_ids_to_do)
         tweet_ids_not_done = []
@@ -275,9 +282,7 @@ while BLEACH_LIKES:
 
     except WrappedPyTwitterAPIUnauthorizedException:
         logging.info("Authentication failed. Access token may have expired")
-        auth_details = api.refresh_access_token(auth_details[""
-                                                             ""
-                                                             ""])
+        auth_details = api.refresh_access_token(auth_details["refresh_token"])
         continue
     except pytwitter.error.PyTwitterError as ptw:
         logging.fatal("PyTwitterError with unknown message format '{}'".format(ptw.message['status'], ptw.message))
