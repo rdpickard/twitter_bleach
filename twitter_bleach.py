@@ -21,9 +21,13 @@ if sys.version_info < (3, 7):
 LOCAL_HTTPD_SERVER_PORTS_TO_TRY = [8888, 8880, 8080, 9977, 4356, 3307]
 
 TWITTER_CLIENT_ID = os.environ.get("TWITTER_CLIENT_ID")
+
+# P Change this value to log output to a file
+logging_file_name = "local/test1a.log"
+
 logging.basicConfig(
-    filename="local/disklikes-2.log",
-    format='%(asctime)s %(levelname)-8s %(message)s',
+    filename=logging_file_name,
+    format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -223,7 +227,6 @@ print(auth_details)
 
 # Get details about the account. Specifically the Twitter ID for the user that authorized the app.
 twitter_me = api.get_me(return_json=True)
-#logging.debug(twitter_me)
 my_twitter_id = twitter_me["data"]["id"]
 
 # Loop through all of the followers and unfollow them
@@ -261,7 +264,11 @@ while BLEACH_LIKES:
             logging.warning("Twitter response to liked data has no key 'data'. Skipping. Response JSON '{}'".format(base64.b64encode(json.dumps(liked_tweets_query_result).encode())))
             continue
 
+
         tweet_ids_to_do = tweet_ids_not_done + list(map(lambda t: t["id"], liked_tweets_query_result['data']))
+
+        logging.info("List of liked tweet IDs {}".format(tweet_ids_to_do))
+
         logging.info(tweet_ids_to_do)
         tweet_ids_not_done = []
         for tweet_id in tweet_ids_to_do:
@@ -292,10 +299,54 @@ logging.debug(f"Total likes {total_unliked_tweets}")
 previous_likes_file_handle.close()
 
 # Loop through all of the user tweets and delete them
-total_tweets = 0
-while BLEACH_TWEETS:
-    break
-    # NOTE There is a rate limit of 50 'delete tweet' per 15 min window https://developer.twitter.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/delete-tweets-id
-logging.debug(f"Total likes {total_tweets}")
+# https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/api-reference/get-users-id-tweets#Optional
+total_tweets_bleached = 0
+tweets_not_processed = []
+pagination_token = None
+max_tweets_to_process = 5
+while BLEACH_TWEETS and (max_tweets_to_process == -1 or total_tweets_bleached < max_tweets_to_process):
+    try:
+        user_tweets_query_result = api.get_timelines(user_id=my_twitter_id,
+                                                     return_json=True,
+                                                     max_results=50,
+                                                     pagination_token=pagination_token)
 
-print(total_following)
+        tweet_ids_to_delete = list(map(lambda t: t["id"], user_tweets_query_result['data']))
+        logging.info(f"Tweets IDs to delete for user '{my_twitter_id}' {tweet_ids_to_delete}")
+
+        tweets_to_process = user_tweets_query_result['data'] + tweets_not_processed
+        tweets_not_processed = []
+
+        for tweet in tweets_to_process:
+            logging.info("archive of tweet '{}'".format(json.dumps(tweet)))
+            try:
+                if tweet['text'].startswith("RT "):
+                    delete_response = api.remove_retweet_tweet(user_id=my_twitter_id, tweet_id=tweet["id"])
+                else:
+                    delete_response = api.delete_tweet(tweet_id=tweet["id"])
+                total_tweets_bleached += 1
+                logging.info("Response of delete tweet '{}' -> '{}'".format(tweet["id"], delete_response))
+
+            except WrappedPyTwitterAPIRateLimitExceededException:
+                # NOTE There is a rate limit of 50 'delete tweet' per 15 min window https://developer.twitter.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/delete-tweets-id
+                # This is why get_timelines has max_results of 50
+                tweets_not_processed.append(tweet)
+                logging.info(
+                    "Unlike Tweet rate limit exceeded. Waiting 15min. Deleted so far {}".format(total_tweets_bleached))
+                time.sleep(900)
+                continue
+
+        if 'next_token' not in user_tweets_query_result['meta'].keys():
+            break
+
+        pagination_token = user_tweets_query_result['meta']['next_token']
+
+    except WrappedPyTwitterAPIUnauthorizedException:
+        logging.info("Authentication failed. Access token may have expired")
+        auth_details = api.refresh_access_token(auth_details["refresh_token"])
+        continue
+    except pytwitter.error.PyTwitterError as ptw:
+        logging.fatal("PyTwitterError with unknown message format '{}'".format(ptw.message['status'], ptw.message))
+        break
+
+logging.debug(f"Total deleted {total_tweets_bleached}")

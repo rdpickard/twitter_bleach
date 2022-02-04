@@ -121,4 +121,8 @@ Not sure why this happens. Only seen it once.
 
 ## Miscellaneous
 
+Retweets show up in a user timeline with the "RT" prefix
+
+`2022-01-27 13:49:59 INFO     archive of tweet '{"id": "1472629536453976069", "text": "RT @SophiaK25856240: @StrikeDebt How does one \"get ready\" while weathering job loss, health threats and lack of childcare? Were we supposed\u2026"}'`
+
 ~~API bearer tokens don't seem to expire.~~ This seems wrong. After an hour of running code gets 403
