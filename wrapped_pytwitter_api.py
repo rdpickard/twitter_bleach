@@ -25,6 +25,8 @@ class WrappedPyTwitterAPI(pytwitter.Api):
 
     oauth2_flow_called_back_auth_url = None
 
+    _authentication_refresh_token = None
+
     def __init__(self, *args, **kwargs):
         super(WrappedPyTwitterAPI, self).__init__(*args, **kwargs)
 
@@ -109,21 +111,24 @@ class WrappedPyTwitterAPI(pytwitter.Api):
         # The Twitter documentation is kind of confusing. However pytwitter will work fine while the token is valid.
         # After it has expired refresh_token will need to be called.
 
-        self.set_access_token(auth_credentials['access_token'])
+        self.set_access_token(auth_credentials['access_token'], auth_credentials.get("refresh_token", None))
 
         return auth_credentials
 
-    def set_access_token(self, access_token):
+    def set_access_token(self, access_token, refresh_token=None):
         """
         Sets the API to use the provided access token for authenticated requests
         :param access_token: Token value from Twitter OAuth2
+        :param refresh_token: Token for getting the next access_token
         :return: None
         """
         self._auth = authlib.integrations.requests_client.OAuth2Auth(
             token={"access_token": access_token, "token_type": "Bearer"}
         )
 
-    def refresh_access_token(self, refresh_token):
+        self._authentication_refresh_token = refresh_token
+
+    def refresh_access_token(self, refresh_token=None):
         """
         Use the refresh_token value to get a new temporary access token. On success the API object will be updated
         to use the new token. set_access_token does not need to be called directly.
@@ -134,23 +139,34 @@ class WrappedPyTwitterAPI(pytwitter.Api):
         :return: The new auth deatils, including the next refresh token
         :raises PyTwitterError: If refresh request did not return 200 HTTP status code
         """
+
+        if self._authentication_refresh_token is None and refresh_token is None:
+            raise WrappedPyTwitterAPIOAuth2FlowException("Can't refresh authentication. No refresh token specified")
+
+        # Prefer a token passed to the function to the class var
+        refresh_token_to_use = None
+        if refresh_token is not None:
+            refresh_token_to_use = refresh_token
+        else:
+            refresh_token_to_use = self._authentication_refresh_token
+
         twitter_refresh_url = "https://api.twitter.com/2/oauth2/token"
 
         # https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
         refresh_token_response = requests.post(twitter_refresh_url,
                                                headers={"Content-Type": "application/x-www-form-urlencoded"},
                                                data={
-                                                   "refresh_token": refresh_token,
+                                                   "refresh_token": refresh_token_to_use,
                                                    "grant_type": "refresh_token",
                                                    "client_id": self.client_id
                                                })
 
         if refresh_token_response.status_code == 200:
-            self.set_access_token(refresh_token_response.json()['access_token'])
-            self._auth = authlib.integrations.requests_client.OAuth2Auth(
-                token={"access_token": refresh_token_response.json()['access_token'], "token_type": "Bearer"}
-            )
+            self.set_access_token(refresh_token_response.json()['access_token'],
+                                  refresh_token_response.json().get("refresh_token", None))
+
             self.get_me(return_json=True)
+
         else:
             raise pytwitter.PyTwitterError(f"Token refresh returned status code '{refresh_token_response.status_code}'")
         return refresh_token_response.json()
