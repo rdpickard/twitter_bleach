@@ -5,10 +5,29 @@ import time
 
 from wrapped_pytwitter_api import *
 
+# Use version2 Twitter API to unlike tweets
+# https://developer.twitter.com/en/docs/twitter-api/tweets/likes/api-reference/delete-users-id-likes-tweet_id
+#
+# The API has a ratelimit of 50 unlikes requests per 15 min. Code will pause if rate limit is exceeded and
+# then continue.
+#
+# For long runs, the code will refresh the authentication bearer token when it expires
+#
 
-def bleach_likes(api, twitter_user_id, unlike_limit=None):
 
-    previous_likes_file_handle = open("local/previous_likes.txt", 'a+')
+def bleach_likes(api, unlike_limit=None, likes_archive_file=None, _dont_actually_bleach=False):
+    """
+    Unlike all the tweets a user has liked in their timeline
+
+    :param api: Instance of an authenticated pytwitter2 WrappedPyTwitterAPI
+    :param unlike_limit: Limit of tweets to unlike. Default is None, which will unlike all
+    :param likes_archive_file: File to archive details of unliked tweets. Default is None, which is no archiving
+    :param _dont_actually_bleach: boolean to not actually make DELETE API call. For testing. Default False
+    :return: Number of tweets unliked
+    """
+
+    twitter_me = api.get_me(return_json=True)
+    twitter_user_id = twitter_me["data"]["id"]
 
     total_unliked_tweets = 0
 
@@ -59,4 +78,4 @@ def bleach_likes(api, twitter_user_id, unlike_limit=None):
             break
 
     logging.debug(f"Total likes {total_unliked_tweets}")
-    previous_likes_file_handle.close()
+    return total_unliked_tweets

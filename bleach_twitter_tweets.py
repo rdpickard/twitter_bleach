@@ -4,10 +4,30 @@ import time
 
 from wrapped_pytwitter_api import *
 
-# Loop through all of the user tweets and delete them
-# https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/api-reference/get-users-id-tweets#Optional
+# Loop through all the user tweets and delete them
+#
+# https://developer.twitter.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/delete-tweets-id
+#
+# The API has a ratelimit of 50 delete requests per 15 min. Code will pause if rate limit is exceeded and
+# then continue.
+#
+# For long runs, the code will refresh the authentication bearer token when it expires
+#
 
-def bleach_tweets(api, twitter_user_id, delete_limit=None):
+
+def bleach_tweets(api, delete_limit=None, tweets_archive_file=None, _dont_actually_bleach=False):
+    """
+    Delete all tweets and retweets for a specified user
+
+    :param api: Instance of an authenticated pytwitter2 WrappedPyTwitterAPI
+    :param delete_limit: Limit of number of tweets to delete. Default is None, which is to delete all
+    :param tweets_archive_file: File to archive tweets to. Default is None, which is no archive
+    :param _dont_actually_bleach: boolean to not actually make DELETE API call. For testing. Default False
+    :return: Total number of tweets deleted
+    """
+
+    twitter_me = api.get_me(return_json=True)
+    twitter_user_id = twitter_me["data"]["id"]
 
     total_tweets_deleted = 0
     tweets_not_processed = []
@@ -67,3 +87,4 @@ def bleach_tweets(api, twitter_user_id, delete_limit=None):
             break
 
     logging.debug(f"Total deleted {total_tweets_deleted}")
+    return total_tweets_deleted

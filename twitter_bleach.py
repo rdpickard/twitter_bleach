@@ -45,10 +45,6 @@ logging.info(f"Twitter OAuth2 details '{auth_details}'")
 twitter_me = api.get_me(return_json=True)
 my_twitter_id = twitter_me["data"]["id"]
 
-# Loop through all of the followers and unfollow them
-cursor_token = None
-total_following = 0
-
 if BLEACH_LIKES:
     bleach_likes(api, my_twitter_id)
 

@@ -5,11 +5,29 @@ import time
 
 from wrapped_pytwitter_api import *
 
-
+# Use version2 Twitter API to unfollow users
 # https://developer.twitter.com/en/docs/twitter-api/users/follows/api-reference/delete-users-source_id-following
+#
+# The API has a ratelimit of 50 unfollow requests per 15 min. Code will pause if rate limit is exceeded and
+# then continue.
+#
+# For long runs, the code will refresh the authentication bearer token when it expires
+#
 
 
-def bleach_follows(api, twitter_user_id, unfollow_limit=None):
+def bleach_follows(api, unfollow_limit=None, follows_archive_file=None, _dont_actually_bleach=False):
+    """
+    Unfollow users for the user specified by the passed in ID.
+
+    :param api: Instance of an authenticated pytwitter2 WrappedPyTwitterAPI
+    :param unfollow_limit: Limit of unfollows. Default is None, will attempt to unfollow all
+    :param follows_archive_file: File to write details of unfollowed user. Default is None
+    :param _dont_actually_bleach: boolean to not actually make DELETE API call. For testing. Default False
+    :return: Number of unfollowed accounts
+    """
+
+    twitter_me = api.get_me(return_json=True)
+    twitter_user_id = twitter_me["data"]["id"]
 
     total_users_unfollowed = 0
 
@@ -53,4 +71,4 @@ def bleach_follows(api, twitter_user_id, unfollow_limit=None):
             break
 
     logging.debug(f"Total follows count {total_users_unfollowed}")
-
+    return total_users_unfollowed
