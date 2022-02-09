@@ -7,6 +7,7 @@ from wrapped_pytwitter_api import *
 # Loop through all of the user tweets and delete them
 # https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/api-reference/get-users-id-tweets#Optional
 
+
 def bleach_tweets(api, twitter_user_id, delete_limit=None):
 
     total_tweets_deleted = 0
