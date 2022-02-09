@@ -15,7 +15,7 @@ def bleach_likes(api, twitter_user_id, unlike_limit=None):
     tweet_ids_not_done = []
     pagination_token = None
 
-    while unlike_limit is None or unlike_limit <= total_unliked_tweets:
+    while unlike_limit is None or total_unliked_tweets <= unlike_limit:
         try:
             liked_tweets_query_result = api.get_user_liked_tweets(user_id=twitter_user_id,
                                                                   return_json=True,
@@ -36,6 +36,8 @@ def bleach_likes(api, twitter_user_id, unlike_limit=None):
             tweet_ids_not_done = []
             for tweet_id in tweet_ids_to_do:
                 try:
+                    api.like_tweet(twitter_user_id, tweet_id=tweet_id)
+                    time.sleep(2)
                     api.unlike_tweet(twitter_user_id, tweet_id=tweet_id)
                     total_unliked_tweets += 1
                 except WrappedPyTwitterAPIRateLimitExceededException:

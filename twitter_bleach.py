@@ -19,7 +19,7 @@ LOCAL_HTTPD_SERVER_PORTS_TO_TRY = [8888, 8880, 8080, 9977, 4356, 3307]
 TWITTER_CLIENT_ID = os.environ.get("TWITTER_CLIENT_ID")
 
 # P Change this value to log output to a file
-logging_file_name = None
+logging_file_name = "local/like-unlike.log"
 
 logging.basicConfig(
     filename=logging_file_name,

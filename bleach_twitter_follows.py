@@ -17,7 +17,7 @@ def bleach_follows(api, twitter_user_id, unfollow_limit=None):
 
     users_not_unfollowed = []
 
-    while unfollow_limit is None or unfollow_limit <= total_users_unfollowed:
+    while unfollow_limit is None or total_users_unfollowed <= unfollow_limit:
         try:
             following_query_result = api.get_following(user_id=twitter_user_id,
                                                        return_json=True,

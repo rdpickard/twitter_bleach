@@ -14,7 +14,7 @@ def bleach_tweets(api, twitter_user_id, delete_limit=None):
 
     pagination_token = None
 
-    while delete_limit is None or delete_limit <= total_tweets_deleted:
+    while delete_limit is None or total_tweets_deleted <= delete_limit:
         try:
             user_tweets_query_result = api.get_timelines(user_id=twitter_user_id,
                                                          return_json=True,
