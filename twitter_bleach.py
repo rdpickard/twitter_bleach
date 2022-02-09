@@ -46,8 +46,8 @@ twitter_me = api.get_me(return_json=True)
 my_twitter_id = twitter_me["data"]["id"]
 
 if BLEACH_LIKES:
-    bleach_likes(api, my_twitter_id)
+    bleach_likes(api)
 
 if BLEACH_TWEETS:
-    bleach_tweets(api, my_twitter_id)
+    bleach_tweets(api)
 

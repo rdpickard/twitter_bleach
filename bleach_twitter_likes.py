@@ -34,12 +34,16 @@ def bleach_likes(api, unlike_limit=None, likes_archive_file=None, _dont_actually
     tweet_ids_not_done = []
     pagination_token = None
 
+    failed_requests_in_a_row = 0
+    max_failed_requests_in_a_row = 5
+
     while unlike_limit is None or total_unliked_tweets <= unlike_limit:
         try:
             liked_tweets_query_result = api.get_user_liked_tweets(user_id=twitter_user_id,
                                                                   return_json=True,
                                                                   max_results=50,
                                                                   pagination_token=pagination_token)
+            failed_requests_in_a_row = 0
 
             if 'data' not in liked_tweets_query_result.keys():
                 logging.warning("Twitter response to liked data has no key 'data'. Skipping. Response JSON '{}'".format(base64.b64encode(json.dumps(liked_tweets_query_result).encode())))
@@ -56,7 +60,6 @@ def bleach_likes(api, unlike_limit=None, likes_archive_file=None, _dont_actually
             for tweet_id in tweet_ids_to_do:
                 try:
                     api.like_tweet(twitter_user_id, tweet_id=tweet_id)
-                    time.sleep(2)
                     api.unlike_tweet(twitter_user_id, tweet_id=tweet_id)
                     total_unliked_tweets += 1
                 except WrappedPyTwitterAPIRateLimitExceededException:
@@ -75,6 +78,17 @@ def bleach_likes(api, unlike_limit=None, likes_archive_file=None, _dont_actually
             logging.info("Authentication failed. Access token may have expired")
             api.refresh_access_token()
             continue
+        except WrappedPyTwitterAPIServiceUnavailableException:
+            failed_requests_in_a_row += 1
+            if failed_requests_in_a_row < max_failed_requests_in_a_row:
+                logging.info("API service unavailable. Waiting 5 seconds, resetting pagination and trying again")
+                tweet_ids_not_done = []
+                pagination_token = None
+                time.sleep(5)
+                continue
+            else:
+                logging.info("API service unavailable. Failed {} times in a row, max failed attempts {}. Bailing.".format(failed_requests_in_a_row, max_failed_requests_in_a_row))
+                break
         except pytwitter.error.PyTwitterError as ptw:
             logging.fatal("PyTwitterError with unknown message format '{}'".format(ptw.message['status'], ptw.message))
             break

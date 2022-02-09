@@ -21,6 +21,10 @@ class WrappedPyTwitterAPIOAuth2FlowException(pytwitter.PyTwitterError):
     pass
 
 
+class WrappedPyTwitterAPIServiceUnavailableException(pytwitter.PyTwitterError):
+    pass
+
+
 class WrappedPyTwitterAPI(pytwitter.Api):
 
     oauth2_flow_called_back_auth_url = None
@@ -191,6 +195,8 @@ class WrappedPyTwitterAPI(pytwitter.Api):
             raise WrappedPyTwitterAPIRateLimitExceededException(resp.json())
         elif resp.status_code == 401:
             raise WrappedPyTwitterAPIUnauthorizedException(resp.json())
+        elif resp.status_code == 503:
+            raise WrappedPyTwitterAPIServiceUnavailableException(resp.json())
         elif not resp.ok:
             raise pytwitter.PyTwitterError(data)
 
