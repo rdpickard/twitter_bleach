@@ -1,6 +1,6 @@
 # twitter_bleach
 
-Unlike all Tweets, delete Tweets (not implemented yet[^1]) and unfollow all other Twitter users (not implemented yet[^1]). Uses the Twitter
+Unlike all Tweets, delete Tweets and unfollow all other Twitter users. Uses the Twitter
 API to automate the process of bleaching all Twitter activity without needing to delete your account.
 
 Some Twitter activity, such as "Bookmarked Tweets" aren't yet accessible through the official API so twitter_bleach can't do anything with those aspects of an account. 
