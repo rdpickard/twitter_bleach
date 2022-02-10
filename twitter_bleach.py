@@ -9,6 +9,7 @@ from wrapped_pytwitter_api import *
 from bleach_twitter_likes import *
 from bleach_twitter_tweets import *
 from bleach_twitter_follows import *
+from bleach_twitter_lists import *
 
 if sys.version_info < (3, 7):
     # script uses functools.partial which is a pretty recent capability
@@ -28,13 +29,15 @@ logging.basicConfig(
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
 
-BLEACH_FOLLOWS = True
+BLEACH_FOLLOWS = False
 BLEACH_LIKES = False
 BLEACH_TWEETS = False
+BLEACH_LISTS = True
 
 # The scopes requested of the Twitter OAUTH2 API on behalf of the user that will bleach their account
 twitter_api_scopes = ["tweet.read", "tweet.write", "users.read", "tweet.read",
                       "users.read", "like.write", "like.read", "follows.read",
+                      "list.read", "list.write",
                       "follows.write", "offline.access"]
 
 
@@ -55,3 +58,7 @@ if BLEACH_TWEETS:
 if BLEACH_FOLLOWS:
     follows_archive = open("local/follows_archive.csv", "a+")
     unfollows = bleach_follows(api, follows_archive_csv_file=follows_archive, _dont_actually_bleach=True)
+
+if BLEACH_LISTS:
+    lists_archive = open("local/lists_archive.csv", "a+")
+    bleach_lists(api, list_archive_csv_file=lists_archive, _dont_actually_bleach=True)

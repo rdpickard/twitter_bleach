@@ -12,6 +12,8 @@ import pytwitter  # pip 'package' is python-twitter, module is pytwitter -RDP
 class WrappedPyTwitterAPIRateLimitExceededException(pytwitter.PyTwitterError):
     pass
 
+class WrappedPyTwitterAPIForbiddenException(pytwitter.PyTwitterError):
+    pass
 
 class WrappedPyTwitterAPIUnauthorizedException(pytwitter.PyTwitterError):
     pass
@@ -195,6 +197,8 @@ class WrappedPyTwitterAPI(pytwitter.Api):
             raise WrappedPyTwitterAPIRateLimitExceededException(resp.json())
         elif resp.status_code == 401:
             raise WrappedPyTwitterAPIUnauthorizedException(resp.json())
+        elif resp.status_code == 403:
+            raise WrappedPyTwitterAPIForbiddenException(resp.json())
         elif resp.status_code == 503:
             raise WrappedPyTwitterAPIServiceUnavailableException(resp.json())
         elif not resp.ok:

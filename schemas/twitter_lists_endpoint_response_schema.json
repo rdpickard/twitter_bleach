@@ -1,0 +1,47 @@
+{
+  "$id": "https://example.com/person.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Expected response from the Twitter v2 endpoint https://developer.twitter.com/en/docs/twitter-api/lists/list-lookup/api-reference/get-users-id-owned_lists",
+  "type": "object",
+  "required": ["data"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/twitter_list" }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "result_count": {
+          "type": "integer"
+        },
+        "next_token": {
+          "type": "string"
+        },
+        "previous_token": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "twitter_list": {
+      "title": "Twitter List API",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Twitter list ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the list"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    }
+  }
+}
