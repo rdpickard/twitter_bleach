@@ -8,6 +8,7 @@ import base64
 from wrapped_pytwitter_api import *
 from bleach_twitter_likes import *
 from bleach_twitter_tweets import *
+from bleach_twitter_follows import *
 
 if sys.version_info < (3, 7):
     # script uses functools.partial which is a pretty recent capability
@@ -51,3 +52,6 @@ if BLEACH_LIKES:
 if BLEACH_TWEETS:
     bleach_tweets(api)
 
+if BLEACH_FOLLOWS:
+    follows_archive = open("local/follows_archive.csv", "a+")
+    unfollows = bleach_follows(api, unfollow_limit=10, follows_archive_csv_file=follows_archive, _dont_actually_bleach=True)

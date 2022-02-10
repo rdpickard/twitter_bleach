@@ -1,0 +1,21 @@
+{
+  "$id": "https://example.com/person.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Twitter User API",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Twitter user account ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Current display name of Twitter user"
+    },
+    "username": {
+      "description": "Username of Twitter account",
+      "type": "string"
+    }
+  },
+  "required": ["id", "name", "username"]
+}
