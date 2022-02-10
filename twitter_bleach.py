@@ -28,8 +28,8 @@ logging.basicConfig(
     level=logging.DEBUG,
     datefmt='%Y-%m-%d %H:%M:%S')
 
-BLEACH_FOLLOWS = False
-BLEACH_LIKES = True
+BLEACH_FOLLOWS = True
+BLEACH_LIKES = False
 BLEACH_TWEETS = False
 
 # The scopes requested of the Twitter OAUTH2 API on behalf of the user that will bleach their account
@@ -54,4 +54,4 @@ if BLEACH_TWEETS:
 
 if BLEACH_FOLLOWS:
     follows_archive = open("local/follows_archive.csv", "a+")
-    unfollows = bleach_follows(api, unfollow_limit=10, follows_archive_csv_file=follows_archive, _dont_actually_bleach=True)
+    unfollows = bleach_follows(api, follows_archive_csv_file=follows_archive, _dont_actually_bleach=True)

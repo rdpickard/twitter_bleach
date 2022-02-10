@@ -23,7 +23,7 @@ def bleach_follows(api, unfollow_limit=None, follows_archive_csv_file=None, _don
 
     :param api: Instance of an authenticated pytwitter2 WrappedPyTwitterAPI
     :param unfollow_limit: Limit of unfollows. Default is None, will attempt to unfollow all
-    :param follows_archive_file: File to write details of unfollowed user. Default is None
+    :param follows_archive_csv_file: File to write details of unfollowed user. Default is None
     :param _dont_actually_bleach: boolean to not actually make DELETE API call. For testing. Default False
     :return: Number of unfollowed accounts
     """
@@ -104,7 +104,6 @@ def bleach_follows(api, unfollow_limit=None, follows_archive_csv_file=None, _don
             break
         except Exception as e:
             logging.fatal("Exception of unhandled type {}. Message is '{}'".format(type(e), e))
-
 
     logging.debug(f"Total unfollows count {total_users_unfollowed}")
     return total_users_unfollowed
