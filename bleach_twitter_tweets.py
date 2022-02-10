@@ -54,6 +54,9 @@ def bleach_tweets(api, delete_limit=None, tweets_archive_file=None, _dont_actual
             tweets_not_processed = []
 
             for tweet in tweets_to_process:
+                if delete_limit is not None and total_tweets_deleted > delete_limit:
+                    break
+
                 logging.info("archive of tweet '{}'".format(json.dumps(tweet)))
                 try:
                     if tweet['text'].startswith("RT "):

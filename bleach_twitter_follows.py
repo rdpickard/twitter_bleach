@@ -56,6 +56,9 @@ def bleach_follows(api, unfollow_limit=None, follows_archive_csv_file=None, _don
             users_to_unfollow = following_query_result["data"]+users_not_unfollowed
 
             for followed_user in users_to_unfollow:
+                if unfollow_limit is not None and total_users_unfollowed > unfollow_limit:
+                    break
+
                 try:
                     # TODO Unfollow here
                     if not _dont_actually_bleach:

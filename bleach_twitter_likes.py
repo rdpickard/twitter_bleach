@@ -58,6 +58,9 @@ def bleach_likes(api, unlike_limit=None, likes_archive_file=None, _dont_actually
 
             tweet_ids_not_done = []
             for tweet_id in tweet_ids_to_do:
+                if unlike_limit is not None and total_unliked_tweets > unlike_limit:
+                    break
+
                 try:
                     api.like_tweet(twitter_user_id, tweet_id=tweet_id)
                     api.unlike_tweet(twitter_user_id, tweet_id=tweet_id)
