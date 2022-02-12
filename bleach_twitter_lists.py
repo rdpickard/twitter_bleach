@@ -99,7 +99,6 @@ def bleach_lists(api, list_limit=None, list_archive_csv_file=None, _dont_actuall
         lists_members_json_schema = json.load(lists_members_response_schema_file)
 
     while True:
-        print("hi")
         try:
 
             list_query_result = api.get_user_owned_lists(user_id=twitter_user_id,
@@ -107,7 +106,6 @@ def bleach_lists(api, list_limit=None, list_archive_csv_file=None, _dont_actuall
                                                          return_json=True)
 
             jsonschema.validate(lists_json_schema, list_query_result)
-            logging.info("lists {}".format(list_query_result))
 
             for twitter_list in list_query_result["data"]:
 
